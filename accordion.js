@@ -105,7 +105,12 @@
                 }
             } else {
                 // closing it
-                $elem.slideUp();
+                $elem.slideUp({
+                    'complete' : function() {
+                        // call callback
+                        if($.isFunction(o.callback)) o.callback.apply(this,[e,ident]);                        
+                    }
+                });
                 $item.removeClass(o.activeClass);
             }
         }
