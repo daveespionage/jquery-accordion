@@ -19,100 +19,137 @@
 *  $('.accordions').accordions();
 * </script>
 */
-(function($){
-    $.fn.accordion = function(options) {
-        var settings = {
-            selector : '.accordion-item',           // default accordion class
-            cselector: '.accordion-content',        // default accordion content class
-            activeClass: 'selected',                // default selected state class
-            hideOthers: true,                       // sets accordion to close other open items when triggered
-            scrollOffset: 125,                      // amount to jump when content opens
-            callback: function(e,ident){}           // default callback (does nothing)
-        };
-        options = $.extend( settings, options );    // get our options together
-        return this.each (function () {
-            // set up variables
-            var o = options,
-                container = this;
-            var $parent = $(o.selector).parent(),
-                $navitem = $(o.selector+'.selected',container);
+;(function($, window, document, undefined){
+    var pluginName = 'accordion',
+        counter = 1,
+        defaults = {
+        selector : '.accordion-item',           // default accordion class
+        cselector: '.accordion-content',        // default accordion content class
+        activeClass: 'selected',                // default selected state class
+        hideOthers: true,                       // sets accordion to close other open items when triggered
+        scrollOffset: 125,                      // amount to jump when content opens
+        callback: function(e,ident,current){}           // default callback (does nothing)
+    };
 
-            if($navitem.length > 0){
-                // store which accordion we are on
-                var ident = $navitem.attr('data-accordion');
-                $parent.attr("data-accordion-current",ident);
+    // the actual plugin constructor
+    function Plugin(element, options) {
+        this.element = element;
+        this.options = $.extend( defaults, options );    // get our options together
+        this._defaults = defaults;
+        this._name = pluginName;
 
-                // set current accordion active
-                $navitem.addClass(o.activeClass);
+        this.init();
+    }
 
-                if(options.hideOthers){
-                    // hide other accordion contents
-                    var notSelected = '[data-accordion!="' + ident + '"]';
-                    $(o.cselector + notSelected, container).hide();
-                    $(o.selector + notSelected, container).removeClass(o.activeClass);
-                }
-            }
+    Plugin.prototype.init = function(){
+        // set up variables
+        var o = this.options,
+            $parent = $(this.element),
+            $navitem = $parent.find(o.selector+'.selected');
 
-            // add trigger event to accordions
-            var $accordions = $(o.selector, container);
-            $accordions.on('click.accordion',{o:o},displayAccordion);
-        });
+        // store parent selector
+        o.counter = counter;
+        console.log("parent", $parent);
 
-        // on click of one of accordions
-        function displayAccordion(e) {
-            e.preventDefault();
+        // initialize current store
+        $parent.attr("data-accordion-current",'');
+        $parent.addClass('accordion_' + counter);
+        counter++;
 
-            var $that = $(this),
-                o = e.data.o;
-            var $parent = $that.parent();
-            var current = $parent.attr("data-accordion-current"),
-                ident = $that.attr("data-accordion"),
-                elemPosition = function (element) {
-                    return element.offset();
-                };
-            var $elem = $(o.cselector + '[data-accordion="' + ident + '"]', $parent),
-                $item = $(o.selector + '[data-accordion="' + ident + '"]', $parent),
-                $currelem = $(o.cselector + '[data-accordion="' + current + '"]', $parent),
-                $curritem = $(o.selector + '[data-accordion="' + current + '"]', $parent);
-            
-            if ($elem.is(':hidden')) {
-                // opening it
-                // slide down content
-                $elem.slideDown({
-                    'complete' : function() {
+        if($navitem.length > 0){
+            // store which accordion we are on
+            var ident = $navitem.attr('data-accordion');
+            $parent.attr("data-accordion-current",ident);
 
-                        var scrollToY = elemPosition($elem).top
-                        //pop the window down a bit so we can see the content
-                        window.scrollTo(0, scrollToY - o.scrollOffset);
+            // set current accordion active
+            $navitem.addClass(o.activeClass);
 
-                        // call callback
-                        if($.isFunction(o.callback)) o.callback.apply(this,[e,ident]);
-
-                    }
-                });
-                // set item to active
-                $item.addClass(o.activeClass);
-
-                // update current selected
-                $parent.attr("data-accordion-current", ident)
-
-                // check if we should hide others
-                if(o.hideOthers){
-                    if(ident !== current){
-                        $currelem.slideUp();
-                        $curritem.removeClass(o.activeClass);
-                    }
-                }
-            } else {
-                // closing it
-                $elem.slideUp({
-                    'complete' : function() {
-                        // call callback
-                        if($.isFunction(o.callback)) o.callback.apply(this,[e,ident]);                        
-                    }
-                });
-                $item.removeClass(o.activeClass);
+            if(options.hideOthers){
+                // hide other accordion contents
+                var notSelected = '[data-accordion!="' + ident + '"]';
+                $(o.cselector + notSelected, this).hide();
+                $(o.selector + notSelected, this).removeClass(o.activeClass);
             }
         }
+
+        // add trigger event to accordions
+        var $accordions = $parent.find(o.selector);
+        console.log($parent.attr('class'), $accordions.length);
+        $accordions.data('plugin_'+pluginName+'_counter',o.counter);
+        $parent.data('plugin_'+pluginName+'_options',o);
+        $accordions.on('click.accordion',displayAccordion);
     };
-})(jQuery);
+
+
+    // on click of one of accordions
+    function displayAccordion(e) {
+        e.preventDefault();
+
+        console.log('you clicked an accordion item!', this);
+
+        var counter = $(this).data('plugin_'+pluginName+'_counter'),
+            ident = $(this).attr("data-accordion"),
+            $parent = $('.accordion_' + counter),
+            o = $parent.data('plugin_'+pluginName+'_options'),
+            current = $parent.attr("data-accordion-current"),
+            $elem = $parent.find(o.cselector + '[data-accordion="' + ident + '"]'),
+            $item = $parent.find(o.selector + '[data-accordion="' + ident + '"]'),
+            $currelem = $parent.find(o.cselector + '[data-accordion="' + current + '"]'),
+            $curritem = $parent.find(o.selector + '[data-accordion="' + current + '"]'),
+            elemPosition = function (element) {
+                return element.offset();
+            };
+
+
+
+        if ($elem.is(':hidden')) {
+            // opening it
+            // slide down content
+            console.log('elem hidden, sliding down', $elem);
+            $elem.slideDown({
+                'complete' : function() {
+
+                    var scrollToY = elemPosition($elem).top;
+                    //pop the window down a bit so we can see the content
+                    window.scrollTo(0, scrollToY - o.scrollOffset);
+
+                    // call callback
+                    if($.isFunction(o.callback)) o.callback.apply(this,[e,o,ident,current]);
+
+                }
+            });
+            // set item to active
+            $item.addClass(o.activeClass);
+
+            // update current selected
+            $parent.attr("data-accordion-current", ident);
+
+            // check if we should hide others
+            if(o.hideOthers){
+                if(ident !== current){
+                    $currelem.slideUp();
+                    $curritem.removeClass(o.activeClass);
+                }
+            }
+        } else {
+            // closing it
+            console.log('elem visible, sliding up', $elem);
+            $elem.slideUp({
+                'complete' : function() {
+                    // call callback
+                    if($.isFunction(o.callback)) o.callback.apply(this,[e,o,ident,current]);
+                }
+            });
+            $item.removeClass(o.activeClass);
+        }
+    }
+
+    $.fn[pluginName] = function(options){
+        return this.each(function () {
+            if (!$.data(this, 'plugin_' + pluginName)) {
+                $.data(this, 'plugin_' + pluginName,
+                new Plugin( this, options ));
+            }
+        });
+    };
+})(jQuery, window, document);
