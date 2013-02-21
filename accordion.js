@@ -45,7 +45,8 @@
         // set up variables
         var o = this.options,
             $parent = $(this.element),
-            $navitem = $parent.find(o.selector+'.selected');
+            $navitems = $(o.selector),
+            $selected = $navitems.filter('.'+o.activeClass);
 
         // store parent selector
         o.counter = counter;
@@ -55,19 +56,17 @@
         $parent.addClass('accordion_' + counter);
         counter++;
 
-        if($navitem.length > 0){
-            // store which accordion we are on
-            var ident = $navitem.attr('data-accordion');
-            $parent.attr("data-accordion-current",ident);
 
-            // set current accordion active
-            $navitem.addClass(o.activeClass);
+        if($selected.length > 0){
+            // store which accordion we are on
+            var ident = $selected.attr('data-accordion');
+            $parent.attr("data-accordion-current",ident);
 
             if(o.hideOthers){
                 // hide other accordion contents
                 var notSelected = '[data-accordion!="' + ident + '"]';
-                $(o.cselector + notSelected, this).hide();
-                $(o.selector + notSelected, this).removeClass(o.activeClass);
+                $(o.cselector + notSelected, $parent).hide();
+                $(o.selector + notSelected, $parent).removeClass(o.activeClass);
             }
         }
 
