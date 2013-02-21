@@ -49,7 +49,6 @@
 
         // store parent selector
         o.counter = counter;
-        console.log("parent", $parent);
 
         // initialize current store
         $parent.attr("data-accordion-current",'');
@@ -64,7 +63,7 @@
             // set current accordion active
             $navitem.addClass(o.activeClass);
 
-            if(options.hideOthers){
+            if(o.hideOthers){
                 // hide other accordion contents
                 var notSelected = '[data-accordion!="' + ident + '"]';
                 $(o.cselector + notSelected, this).hide();
@@ -74,7 +73,6 @@
 
         // add trigger event to accordions
         var $accordions = $parent.find(o.selector);
-        console.log($parent.attr('class'), $accordions.length);
         $accordions.data('plugin_'+pluginName+'_counter',o.counter);
         $parent.data('plugin_'+pluginName+'_options',o);
         $accordions.on('click.accordion',displayAccordion);
@@ -84,8 +82,6 @@
     // on click of one of accordions
     function displayAccordion(e) {
         e.preventDefault();
-
-        console.log('you clicked an accordion item!', this);
 
         var counter = $(this).data('plugin_'+pluginName+'_counter'),
             ident = $(this).attr("data-accordion"),
@@ -105,7 +101,6 @@
         if ($elem.is(':hidden')) {
             // opening it
             // slide down content
-            console.log('elem hidden, sliding down', $elem);
             $elem.slideDown({
                 'complete' : function() {
 
@@ -133,7 +128,6 @@
             }
         } else {
             // closing it
-            console.log('elem visible, sliding up', $elem);
             $elem.slideUp({
                 'complete' : function() {
                     // call callback
