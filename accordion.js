@@ -28,7 +28,7 @@
         activeClass: 'selected',                // default selected state class
         hideOthers: true,                       // sets accordion to close other open items when triggered
         scrollOffset: 125,                      // amount to jump when content opens
-        callback: function(e,ident,current){}           // default callback (does nothing)
+        callback: function(e,o,ident,current){}           // default callback (does nothing)
     };
 
     // the actual plugin constructor
