@@ -26,9 +26,10 @@
         selector : '.accordion-item',           // default accordion class
         cselector: '.accordion-content',        // default accordion content class
         activeClass: 'selected',                // default selected state class
-        hideOthers: true,                       // sets accordion to close other open items when triggered
         scrollOffset: 125,                      // amount to jump when content opens
-        callback: function(e,o,ident,current){}           // default callback (does nothing)
+        hideOthers: true,                       // sets accordion to close other open items when triggered
+        callback: function(e,o,ident,current){},// default callback when an action completes (does nothing)
+        initCallback: function(o){}              // default callback when init completes
     };
 
     // the actual plugin constructor
@@ -56,7 +57,6 @@
         $parent.addClass('accordion_' + counter);
         counter++;
 
-
         if($selected.length > 0){
             // store which accordion we are on
             var ident = $selected.attr('data-accordion');
@@ -75,6 +75,8 @@
         $accordions.data('plugin_'+pluginName+'_counter',o.counter);
         $parent.data('plugin_'+pluginName+'_options',o);
         $accordions.on('click.accordion',displayAccordion);
+        // call callback
+        if($.isFunction(o.initCallback)) o.initCallback.apply(this,[o]);
     };
 
 
